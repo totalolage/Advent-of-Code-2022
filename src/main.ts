@@ -128,7 +128,7 @@ const move = (stacks: Stacks, instruction: Instruction): Stacks => {
 
     const cratesToMove = fromStack.slice(fromStack.length - instruction.count);
     const newFromStack = fromStack.slice(0, fromStack.length - instruction.count);
-    const newToStack = [...toStack, ...cratesToMove.reverse()];
+    const newToStack = [...toStack, ...cratesToMove];
 
     return [
         ...stacks.slice(0, instruction.from - 1),
