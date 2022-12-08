@@ -6,12 +6,12 @@ describe('main', () => {
     });
 
     const testData = [
-        {input: 'This is a test', output: 'This is a test'},
+        {input: 'This is a test', expected: 'This is a test'},
     ]
 
-    testData.forEach(({input, output}) => {
-        it(`should return ${output} for ${input}`, () => {
-            expect(main(input)).toEqual(output);
+    testData.forEach(({input, expected}) => {
+        it(`should return ${expected} for ${input}`, () => {
+            expect(main(input)).toEqual(expected);
         });
     });
 });
