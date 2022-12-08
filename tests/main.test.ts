@@ -4,7 +4,14 @@ describe('main', () => {
     it('should be defined', () => {
         expect(main).toBeDefined();
     });
-    it('should echo whatever is passed to it', () => {
-        expect(main('hello')).toBe('hello');
+
+    const testData = [
+        {input: 'This is a test', output: 'This is a test'},
+    ]
+
+    testData.forEach(({input, output}) => {
+        it(`should return ${output} for ${input}`, () => {
+            expect(main(input)).toEqual(output);
+        });
     });
 });
