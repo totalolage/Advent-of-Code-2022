@@ -6,7 +6,16 @@ describe('main', () => {
     });
 
     const testData = [
-        {input: 'This is a test', expected: 'This is a test'},
+        {
+            input: [
+                '30373',
+                '25512',
+                '65332',
+                '33549',
+                '35390',
+            ].join('\n'),
+            expected: 21
+        },
     ]
 
     testData.forEach(({input, expected}) => {
