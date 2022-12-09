@@ -7,7 +7,7 @@ describe('main', () => {
 
     const testData = [
         {
-            input: [
+            input: [[
                 'R 4',
                 'U 4',
                 'L 3',
@@ -16,14 +16,27 @@ describe('main', () => {
                 'D 1',
                 'L 5',
                 'R 2',
-            ].join('\n'),
-            expected: 13
+            ].join('\n'), 9] as const,
+            expected: 1
         },
+        {
+            input: [[
+                'R 5',
+                'U 8',
+                'L 8',
+                'D 3',
+                'R 17',
+                'D 10',
+                'L 25',
+                'U 20',
+            ].join('\n'), 9] as const,
+            expected: 36
+        }
     ]
 
-    testData.forEach(({input, expected}) => {
+    testData.forEach(({input: [input, ropeLength], expected}) => {
         it(`should return ${expected} for ${input}`, () => {
-            expect(main(input)).toEqual(expected);
+            expect(main(input, ropeLength)).toEqual(expected);
         });
     });
 });
