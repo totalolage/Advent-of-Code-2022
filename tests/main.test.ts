@@ -14,7 +14,7 @@ describe('main', () => {
                 '33549',
                 '35390',
             ].join('\n'),
-            expected: 21
+            expected: 8
         },
     ]
 
