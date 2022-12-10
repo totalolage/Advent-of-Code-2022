@@ -7,7 +7,7 @@ describe('main', () => {
 
     const testData = [
         {
-            input: [[
+            input: [
                 'addx 15',
                 'addx -11',
                 'addx 6',
@@ -154,14 +154,21 @@ describe('main', () => {
                 'noop',
                 'noop',
                 'noop',
-            ].join('\n'), 20, 40] as const,
-            expected: 13140
+            ].join('\n'),
+            expected: [
+                '##..##..##..##..##..##..##..##..##..##..',
+                '###...###...###...###...###...###...###.',
+                '####....####....####....####....####....',
+                '#####.....#####.....#####.....#####.....',
+                '######......######......######......####',
+                '#######.......#######.......#######.....',
+            ].join('\n'),
         },
     ]
 
-    testData.forEach(({input: [input, start, every], expected}) => {
+    testData.forEach(({input, expected}) => {
         it(`should return ${expected} for ${input}`, () => {
-            expect(main(input, start, every)).toEqual(expected);
+            expect(main(input)).toEqual(expected);
         });
     });
 });

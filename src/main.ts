@@ -15,6 +15,21 @@
 
 // Find the signal strength during the 20th, 60th, 100th, 140th, 180th, and 220th cycles. What is the sum of these six signal strengths?
 
+// --- Part Two ---
+// It seems like the X register controls the horizontal position of a sprite. Specifically, the sprite is 3 pixels wide, and the X register sets the horizontal position of the middle of that sprite. (In this system, there is no such thing as "vertical position": if the sprite's horizontal position puts its pixels where the CRT is currently drawing, then those pixels will be drawn.)
+
+// You count the pixels on the CRT: 40 wide and 6 high. This CRT screen draws the top row of pixels left-to-right, then the row below that, and so on. The left-most pixel in each row is in position 0, and the right-most pixel in each row is in position 39.
+
+// Like the CPU, the CRT is tied closely to the clock circuit: the CRT draws a single pixel during each cycle. Representing each pixel of the screen as a #, here are the cycles during which the first and last pixel in each row are drawn:
+
+// Cycle   1 -> ######################################## <- Cycle  40
+// Cycle  41 -> ######################################## <- Cycle  80
+// Cycle  81 -> ######################################## <- Cycle 120
+// Cycle 121 -> ######################################## <- Cycle 160
+// Cycle 161 -> ######################################## <- Cycle 200
+// Cycle 201 -> ######################################## <- Cycle 240
+// So, by carefully timing the CPU instructions and the CRT drawing operations, you should be able to determine whether the sprite is visible the instant each pixel is drawn. If the sprite is positioned such that one of its three pixels is the pixel currently being drawn, the screen produces a lit pixel (#); otherwise, the screen leaves the pixel dark (.).
+
 enum Operation {
     AddX = 'addx',
     NoOp = 'noop',
@@ -40,11 +55,13 @@ const parseInstruction = (line: string): Instruction => {
     }
 };
 
-export const main = (input: string, start: number, every: number) => {
+const CRT_WIDTH = 40;
+const SPRITE_WIDTH = 3;
+export const main = (input: string) => {
     const instructions = input.split('\n').map(parseInstruction);
 
     let x = 1;
-    let signalStrength = 0;
+    const crt = [];
 
     let cycle = 1;
     for (let i = 0; i < instructions.length; i++) {
@@ -52,10 +69,15 @@ export const main = (input: string, start: number, every: number) => {
 
         // console.log(`Cycle ${cycle}: ${instruction}`);
         for (let j = 0; j < cycleCost[instruction[0]]; j++) {
-            if (cycle >= start && (cycle - start) % every === 0) {
-                // console.log({cycle, x})
-                signalStrength += x * cycle;
-            }
+            const crtColIndex = (cycle - 1) % CRT_WIDTH;
+
+            const spriteSpread = (SPRITE_WIDTH - 1) / 2;
+            const isSpriteOnThisPixel = Math.abs(x - crtColIndex) <= spriteSpread;
+
+            const crtRow = crt[Math.floor((cycle - 1) / CRT_WIDTH)] || [];
+            crtRow[crtColIndex] = isSpriteOnThisPixel ? '#' : '.';
+            crt[Math.floor((cycle - 1) / CRT_WIDTH)] = crtRow;
+
             cycle += 1;
         }
 
@@ -64,5 +86,7 @@ export const main = (input: string, start: number, every: number) => {
         }
     }
 
-    return signalStrength;
+    // Print the CRT
+    const out = crt.map(row => row.join('')).join('\n');
+    return out;
 }
