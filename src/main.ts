@@ -47,6 +47,15 @@
 
 // Figure out which monkeys to chase by counting how many items they inspect over 20 rounds. What is the level of monkey business after 20 rounds of stuff-slinging simian shenanigans?
 
+// --- Part Two ---
+// You're worried you might not ever get your items back. So worried, in fact, that your relief that a monkey's inspection didn't damage an item no longer causes your worry level to be divided by three.
+
+// Unfortunately, that relief was all that was keeping your worry levels from reaching ridiculous levels. You'll need to find another way to keep your worry levels manageable.
+
+// At this rate, you might be putting up with these monkeys for a very long time - possibly 10000 rounds!
+
+// Worry levels are no longer divided by three after each item is inspected; you'll need to find another way to keep your worry levels manageable. Starting again from the initial state in your puzzle input, what is the level of monkey business after 10000 rounds?
+
 type Worry = number;
 type Item = {
     worry: Worry;
@@ -65,7 +74,7 @@ type Monkey = {
     inspectTimes: number;
 }
 
-const ROUND_COUNT = 20;
+const ROUND_COUNT = 10000;
 const TOP_MONKEY_COUNT = 2;
 export const main = (input: string) => {
     // Blank line separates monkeys
@@ -139,6 +148,9 @@ export const main = (input: string) => {
         });
     });
 
+    // We only care about the divisibility of the worry level, so we can just keep track of the remainder
+    const divisorMult = Array.from(monkeys.keys()).reduce((acc, key) => acc * monkeys.get(key)!.testDivisor, 1);
+
     const executeTurn = (monkey: Monkey) => {
         const items = monkey.items;
         monkey.items = [];
@@ -149,7 +161,8 @@ export const main = (input: string) => {
                 '+': (old: Worry) => old + value,
             }[monkey.operation](item.worry);
 
-            item.worry = Math.floor(item.worry / 3);
+            // item.worry = Math.floor(item.worry / 3);
+            item.worry = item.worry % divisorMult;
 
             monkey.inspectTimes += 1;
 

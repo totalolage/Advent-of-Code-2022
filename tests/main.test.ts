@@ -36,7 +36,7 @@ describe('main', () => {
                 '    If true: throw to monkey 0',
                 '    If false: throw to monkey 1',
             ].join('\n'),
-            expected: 10605
+            expected: 2713310158
         },
     ]
 
