@@ -7,6 +7,13 @@
 
 // You'd like to reach E, but to save energy, you should do it in as few steps as possible. During each step, you can move exactly one square up, down, left, or right. To avoid needing to get out your climbing gear, the elevation of the destination square can be at most one higher than the elevation of your current square; that is, if your current elevation is m, you could step to elevation n, but not to elevation o. (This also means that the elevation of the destination square can be much lower than the elevation of your current square.)
 
+// --- Part Two ---
+// As you walk up the hill, you suspect that the Elves will want to turn this into a hiking trail. The beginning isn't very scenic, though; perhaps you can find a better starting point.
+
+// To maximize exercise while hiking, the trail should start as low as possible: elevation a. The goal is still the square marked E. However, the trail should still be direct, taking the fewest steps to reach its goal. So, you'll need to find the shortest path from any square at elevation a to the square marked E.
+
+// What is the fewest steps required to move starting from any square with elevation a to the location that should get the best signal?
+
 enum Height {
     a = 0,
     b = 1,
@@ -76,7 +83,7 @@ export const main = (input: string) => {
         grid[y] = [];
         line.split('').forEach((char, x) => {
             switch (char) {
-                case 'S': grid[y][x] = Height.a; start = { x, y }; break;
+                case 'S': grid[y][x] = Height.a; break;
                 case 'a': grid[y][x] = Height.a; break;
                 case 'b': grid[y][x] = Height.b; break;
                 case 'c': grid[y][x] = Height.c; break;
@@ -160,124 +167,147 @@ export const main = (input: string) => {
 
     type StrLoc = `${number},${number}`;
     const stringifyLocation = (location: Position): StrLoc => `${location.x},${location.y}`;
-    const parseLocation = (location: StrLoc): Position => {
-        const [x, y] = location.split(',').map(Number);
-        return { x, y };
-    }
+    // const parseLocation = (location: StrLoc): Position => {
+    //     const [x, y] = location.split(',').map(Number);
+    //     return { x, y };
+    // }
 
-    // States that have already been explored
-    const closedStates = new Set<StrLoc>();
+    const solve = () => {
+        // States that have already been explored
+        const closedStates = new Set<StrLoc>();
 
-    // States that have been discovered but not yet explored, together with their distance to the end
-    const openStates: ExploreState[] = [];
+        // States that have been discovered but not yet explored, together with their distance to the end
+        const openStates: ExploreState[] = [];
 
-    const printState = (state: ExploreState): string => {
-        const output: string[][] = Array(dimensions.height).fill(0)
-            .map(() => Array(dimensions.width).fill('.'));
+        // const printState = (state: ExploreState): string => {
+        //     const output: string[][] = Array(dimensions.height).fill(0)
+        //         .map(() => Array(dimensions.width).fill('.'));
 
-        // Mark closed states
-        closedStates.forEach((loc) => {
-            const { x, y } = parseLocation(loc);
-            output[y][x] = 'X';
-        });
+        //     // Mark closed states
+        //     closedStates.forEach((loc) => {
+        //         const { x, y } = parseLocation(loc);
+        //         output[y][x] = 'X';
+        //     });
 
-        // Mark open states
-        openStates.forEach(({ moves }) => {
-            const { x, y } = positionFromMoves(moves);
-            output[y][x] = 'O';
-        });
+        //     // Mark open states
+        //     openStates.forEach(({ moves }) => {
+        //         const { x, y } = positionFromMoves(moves);
+        //         output[y][x] = 'O';
+        //     });
 
-        // Mark path
-        state.moves.forEach((move) => {
-            const { x, y } = move.position;
-            output[y][x] = move.direction;
-        });
+        //     // Mark path
+        //     state.moves.forEach((move) => {
+        //         const { x, y } = move.position;
+        //         output[y][x] = move.direction;
+        //     });
 
-        // Mark current position
-        const currentPos = positionFromMoves(state.moves);
-        output[currentPos.y][currentPos.x] = String.fromCharCode(97 + grid[currentPos.y][currentPos.x]);
+        //     // Mark current position
+        //     const currentPos = positionFromMoves(state.moves);
+        //     output[currentPos.y][currentPos.x] = String.fromCharCode(97 + grid[currentPos.y][currentPos.x]);
 
-        // Mark end position
-        output[end.y][end.x] = 'E';
+        //     // Mark end position
+        //     output[end.y][end.x] = 'E';
 
-        return output.map(row => row.join('')).join('\n');
-    };
+        //     return output.map(row => row.join('')).join('\n');
+        // };
 
-    const stateCompare = (lhs: ExploreState, rhs: ExploreState): -1 | 0 | 1 => {
-        const lhsCost = lhs.moves.length + lhs.distanceToGoal;
-        const rhsCost = rhs.moves.length + rhs.distanceToGoal;
-        return lhsCost < rhsCost ? -1 : lhsCost > rhsCost ? 1 : 0;
-    };
+        const stateCompare = (lhs: ExploreState, rhs: ExploreState): -1 | 0 | 1 => {
+            const lhsCost = lhs.moves.length + lhs.distanceToGoal;
+            const rhsCost = rhs.moves.length + rhs.distanceToGoal;
+            return lhsCost < rhsCost ? -1 : lhsCost > rhsCost ? 1 : 0;
+        };
 
-    const pushStateToExplore = (moves: Move[]): void => {
-        const position = positionFromMoves(moves);
-        const key = stringifyLocation(position);
+        const pushStateToExplore = (moves: Move[]): void => {
+            const position = positionFromMoves(moves);
+            const key = stringifyLocation(position);
 
-        // Don't explore states that have already been explored
-        if (closedStates.has(key)) {
-            return;
-        }
-        const distanceToGoal = distanceBetween(position, end);
-        const newState: ExploreState = { moves, distanceToGoal };
-
-        // Don't explore states that have already been discovered
-        const existingStateIndex = openStates.findIndex((state) => isSamePosition(positionFromMoves(state.moves), position));
-        if (existingStateIndex !== -1) {
-            // If the new state wouldn't be better than the existing state, don't add it
-            if (stateCompare(openStates[existingStateIndex], newState) !== 1) {
+            // Don't explore states that have already been explored
+            if (closedStates.has(key)) {
                 return;
             }
-            // Otherwise, remove the existing state
-            openStates.splice(existingStateIndex, 1);
-        }
+            const distanceToGoal = distanceBetween(position, end);
+            const newState: ExploreState = { moves, distanceToGoal };
 
-        // Add new state to the list of states to explore, sorted by cost
-        const insertIndex = openStates.findIndex((state) => stateCompare(state, newState) === 1);
-        if (insertIndex === -1) {
-            openStates.push(newState);
-        } else {
-            openStates.splice(insertIndex, 0, newState);
-        }
-    };
+            // Don't explore states that have already been discovered
+            const existingStateIndex = openStates.findIndex((state) => isSamePosition(positionFromMoves(state.moves), position));
+            if (existingStateIndex !== -1) {
+                // If the new state wouldn't be better than the existing state, don't add it
+                if (stateCompare(openStates[existingStateIndex], newState) !== 1) {
+                    return;
+                }
+                // Otherwise, remove the existing state
+                openStates.splice(existingStateIndex, 1);
+            }
 
-    const popNextStateToExplore = (): ExploreState => {
-        const next = openStates.shift()!;
-        closedStates.add(stringifyLocation(positionFromMoves(next.moves)));
-        return next;
-    };
-
-    const exploreState = (state: ExploreState): void => {
-        const moves = state.moves;
-        const position = positionFromMoves(moves);
-
-        // Explore all possible moves
-        Object.values(Direction)
-            .map((direction): Move => ({ position, direction }))
-            // Filter out illegal moves
-            .filter(isMoveLegal)
-            // Explore each move
-            .forEach((move) => {
-                pushStateToExplore([...moves, move]);
-            });
-    };
-
-    const isGoalState = ({moves}: ExploreState): boolean => isSamePosition(positionFromMoves(moves), end);
-
-    // Push the first state to explore
-    openStates.push({ moves: [], distanceToGoal: distanceBetween(start, end) });
-    for (let iter_count = 0; openStates.length > 0; iter_count++) {
-        const state = popNextStateToExplore();
-        // console.clear();
-        console.log('-'.repeat(dimensions.width));
-        // console.log(openStates.map(state => state.moves.length + state.distanceToGoal));
-        console.log(printState(state));
-        if (isGoalState(state)) {
-            console.log("Found solution in", state.moves.length, "moves over", iter_count, "iterations");
-            return state.moves.length;
+            // Add new state to the list of states to explore, sorted by cost
+            const insertIndex = openStates.findIndex((state) => stateCompare(state, newState) === 1);
+            if (insertIndex === -1) {
+                openStates.push(newState);
+            } else {
+                openStates.splice(insertIndex, 0, newState);
+            }
         };
-        exploreState(state);
+
+        const popNextStateToExplore = (): ExploreState => {
+            const next = openStates.shift()!;
+            closedStates.add(stringifyLocation(positionFromMoves(next.moves)));
+            return next;
+        };
+
+        const exploreState = (state: ExploreState): void => {
+            const moves = state.moves;
+            const position = positionFromMoves(moves);
+
+            // Explore all possible moves
+            Object.values(Direction)
+                .map((direction): Move => ({ position, direction }))
+                // Filter out illegal moves
+                .filter(isMoveLegal)
+                // Explore each move
+                .forEach((move) => {
+                    pushStateToExplore([...moves, move]);
+                });
+        };
+
+        const isGoalState = ({moves}: ExploreState): boolean => isSamePosition(positionFromMoves(moves), end);
+
+        // Push the first state to explore
+        openStates.push({ moves: [], distanceToGoal: distanceBetween(start, end) });
+        for (let iter_count = 0; openStates.length > 0; iter_count++) {
+            const state = popNextStateToExplore();
+            // console.clear();
+            // console.log('-'.repeat(dimensions.width));
+            // console.log(openStates.map(state => state.moves.length + state.distanceToGoal));
+            // console.log(printState(state));
+            if (isGoalState(state)) {
+                console.log("Found solution in", state.moves.length, "moves over", iter_count, "iterations");
+                return state.moves.length;
+            };
+            exploreState(state);
+        }
+
+        console.log("No solution found");
+        return null;
+    };
+
+    const allPossibleStartingPositions: Position[] = [];
+    for (let y = 0; y < dimensions.height; y++) {
+        for (let x = 0; x < dimensions.width; x++) {
+            if (grid[y][x] === Height.a) {
+                allPossibleStartingPositions.push({ x, y });
+            }
+        }
     }
 
-    console.log("No solution found");
-    return -1;
+    let bestSolutionLength = Infinity;
+    for (const startingPosition of allPossibleStartingPositions) {
+        start = startingPosition;
+        const solutionLength = solve();
+        if (solutionLength !== null && solutionLength < bestSolutionLength) {
+            bestSolutionLength = solutionLength;
+        }
+    }
+
+    console.log("Best solution length:", bestSolutionLength);
+    return bestSolutionLength;
 };

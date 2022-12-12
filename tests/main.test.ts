@@ -25,7 +25,7 @@ describe('main', () => {
                 'acctuvwj',
                 'abdefghi',
             ].join('\n'),
-            expected: 31,
+            expected: 29,
         },
     ]
 
