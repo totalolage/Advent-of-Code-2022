@@ -1,6 +1,17 @@
 import { main } from "../src/main.js";
 
 describe('main', () => {
+
+    const jestConsole = console;
+
+    beforeEach(() => {
+        global.console = require('console');
+    });
+
+    afterEach(() => {
+        global.console = jestConsole;
+    });
+
     it('should be defined', () => {
         expect(main).toBeDefined();
     });
@@ -10,7 +21,7 @@ describe('main', () => {
             input: [
                 'This is a test',
             ].join('\n'),
-            expected: 'This is a test'
+            expected: 'This is a test',
         },
     ]
 
